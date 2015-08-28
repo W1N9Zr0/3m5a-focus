@@ -14,14 +14,17 @@ function pitch_radius(n, dp) = n * (1 / dp) / 2;
 
 function cp(n, pr) = pr / n * 360;
 
-want_dist = lens_r_mount + servo_r + 2.54;
+want_dist = lens_r_mount + servo_r + 2.52;
 echo("want dist", want_dist);
 
 lens_teeth = 90;
-motor_teeth = 27;
+motor_teeth = 23;
 
 c_pitch = cp(lens_teeth, want_dist * lens_teeth / (lens_teeth + motor_teeth));
 pitch = 180 / c_pitch;
+echo("pitch", pitch);
+
+twist = 0.2;
 
 
 clamp_size = 10;
@@ -29,7 +32,7 @@ clamp_gap = 2;
 clamp_l = 13;
 
 module big_gear() {
-	thickness = 15;
+	thickness = 12;
 	difference() {
 		union() {
 			gear(
@@ -37,7 +40,7 @@ module big_gear() {
 				diametral_pitch = pitch,
 				gear_thickness = thickness,
 				rim_thickness = thickness,
-				twist = 1,
+				twist = twist,
 				bore_diameter = 5);
 
 			translate([0,-clamp_size/2,0]) cube([lens_r + clamp_l, clamp_size,thickness ]);
@@ -63,12 +66,12 @@ echo("distance", distance);
 
 //translate([distance,0,0])
 
-module small_gear() {
+module small_gear(teeth = motor_teeth) {
 //translate([0,0,6]) rotate([0,180,0])
 difference() {
 gear(
 	$fs = 0.1, $fa=8,
-	number_of_teeth = motor_teeth,
+	number_of_teeth = teeth,
 	diametral_pitch = pitch,
 	gear_thickness = 3,
 	rim_thickness = 6,
@@ -76,7 +79,7 @@ gear(
 	hub_thickness = 6,
 	hub_diameter = 10,
 	bore_diameter = 2,
-	twist = -1,
+	twist = -twist,
 	circles = 7);
 
 translate([0,0,6.5+.01]) rotate([0,180,0]) servo_head();
@@ -84,5 +87,12 @@ translate([0,0,6.5+.01]) rotate([0,180,0]) servo_head();
 }
 
 big_gear();
-//translate([-distance,0,0])
+// translate([-distance,0,0])
 	small_gear();
+
+// small_gear(motor_teeth -1);
+// translate([29,0,0])small_gear(motor_teeth -2);
+// translate([15,24,0])small_gear(motor_teeth -3);
+// echo("distance-1", pitch_radius(lens_teeth, pitch) + pitch_radius(motor_teeth-1, pitch));
+// echo("distance-2", pitch_radius(lens_teeth, pitch) + pitch_radius(motor_teeth-2, pitch));
+// echo("distance-3", pitch_radius(lens_teeth, pitch) + pitch_radius(motor_teeth-3, pitch));
